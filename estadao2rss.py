@@ -12,11 +12,13 @@ def cabecalho(editoria, colunista):
     rss += "<description>Coluna do " + colunista.capitalize() + " - Estadao</description>"
     return rss
 
-def geraItem(titulo, link, conteudo):
+def geraItem(titulo, link, conteudo, pubDate=""):
     item =  "<item>"
     item += "<title>" + titulo + "</title>"
     item += "<link>" + link + "</link>"
-    item += "<description>" + conteudo + "</description>"
+    item += "<description>" 
+    item += "<![CDATA[" + conteudo + "]]>"
+    item += "</description>"
     item += "</item>"
     return item
 
@@ -37,16 +39,18 @@ def geraLinksArtigos(colunista, editoria=""):
 def obtemConteudoArtigo(link):
     article = requests.get(link)
     soup = BeautifulSoup(article.text, 'html.parser')
-    # Localização conteúdo da notícia
+    # Localizacao conteudo da noticia
     content = soup.find(class_="n--noticia__content content")
-    # Remoção de propagandas do site
+    # Remocao de propagandas do site
     banner = soup.find(class_="banner-in-content")
     if (banner != None):
         banner.extract()
     limite = soup.find(class_="limite-continuar-lendo")
     if (limite != None):
         limite.extract()
-    return content.get_text()
+    # Insercao de quebras de linha nos artigos
+    #return '\n'.join(p.get_text() for p in soup.find_all('p'))
+    return content.get_text("\n")
 
 def obtemTitulo(link):
     match = re.search(",([\-\w]+),", link)
@@ -65,6 +69,7 @@ def geraRSS(editoria, colunista):
     return rss
 
 def gravaXML(editoria, colunista):
+    print("Gerando xml de " + colunista)
     rss = geraRSS(editoria, colunista)
     with open(colunista + ".xml", 'w') as arquivo_saida:
         arquivo_saida.write(rss)
