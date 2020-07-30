@@ -36,11 +36,17 @@ def geraLinksArtigos(colunista, editoria=""):
         hrefs.append(link.get('href'))
     return hrefs
 
-def obtemConteudoArtigo(link):
+def getContentClass(editoria):
+    if editoria in ["cultura", "internacional"]:
+        return "n--noticia__content content"
+    else:
+        return "noticia"
+
+def obtemConteudoArtigo(editoria, link):
     article = requests.get(link)
     soup = BeautifulSoup(article.text, 'html.parser')
     # Localizacao conteudo da noticia
-    content = soup.find(class_="n--noticia__content content")
+    content = soup.find(class_=getContentClass(editoria))
     # Remocao de propagandas do site
     banner = soup.find(class_="banner-in-content")
     if (banner != None):
@@ -57,12 +63,11 @@ def obtemTitulo(link):
     return match.group(1).capitalize()
 
 def geraRSS(editoria, colunista):
-    #colunista = sys.argv[1]
     rss = cabecalho(editoria, colunista)
 
     hrefs = geraLinksArtigos(colunista, editoria)
     for href in hrefs:
-        conteudo = obtemConteudoArtigo(href)
+        conteudo = obtemConteudoArtigo(editoria, href)
         rss += geraItem(obtemTitulo(href), href, conteudo)
 
     rss += geraRodape()
@@ -74,8 +79,9 @@ def gravaXML(editoria, colunista):
     with open(colunista + ".xml", 'w') as arquivo_saida:
         arquivo_saida.write(rss)
 
-#print(BeautifulSoup(geraRSS("", "silvio-meira"), 'html.parser').prettify())
-#print(BeautifulSoup(geraRSS("cultura", "leandro-karnal"), 'html.parser').prettify())
-#print(geraRSS("cultura", "luis-fernando-verissimo"))
+#print(BeautifulSoup(geraRSS("internacional", "moises-naim"), 'html.parser').prettify())
 gravaXML("cultura", "luis-fernando-verissimo")
 gravaXML("cultura", "leandro-karnal")
+gravaXML("cultura", "marcelo-rubens-paiva")
+gravaXML("internacional", "moises-naim")
+

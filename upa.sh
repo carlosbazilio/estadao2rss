@@ -3,6 +3,6 @@ PATH=/usr/local/bin:/usr/local/sbin:~/bin:/usr/bin:/bin:/usr/sbin:/sbin:/anacond
 . env/bin/activate
 python estadao2rss.py
 git add *.xml
-dia=date+"%d/%m/%Y"
-git commit -m "Atualização Automática - $dia"
+dia=$(date '+%d/%m/%Y')
+git commit -m "Atualização Automática - ${dia}"
 git push
