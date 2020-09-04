@@ -36,17 +36,11 @@ def geraLinksArtigos(colunista, editoria=""):
         hrefs.append(link.get('href'))
     return hrefs
 
-def getContentClass(editoria):
-    if editoria in ["cultura", "internacional"]:
-        return "n--noticia__content content"
-    else:
-        return "noticia"
-
 def obtemConteudoArtigo(editoria, link):
     article = requests.get(link)
     soup = BeautifulSoup(article.text, 'html.parser')
     # Localizacao conteudo da noticia
-    content = soup.find(class_=getContentClass(editoria))
+    content = soup.find(class_="n--noticia__content content")
     # Remocao de propagandas do site
     banner = soup.find(class_="banner-in-content")
     if (banner != None):
@@ -54,9 +48,13 @@ def obtemConteudoArtigo(editoria, link):
     limite = soup.find(class_="limite-continuar-lendo")
     if (limite != None):
         limite.extract()
-    # Insercao de quebras de linha nos artigos
-    #return '\n'.join(p.get_text() for p in soup.find_all('p'))
-    return content.get_text("\n")
+    if (content != None):
+        return content.get_text("\n")
+    else:
+        res = ""
+        for no in soup.find_all("p"):
+            res += no.get_text("\n")
+        return res
 
 def obtemTitulo(link):
     match = re.search(",([\-\w]+),", link)
@@ -79,7 +77,6 @@ def gravaXML(editoria, colunista):
     with open(colunista + ".xml", 'w') as arquivo_saida:
         arquivo_saida.write(rss)
 
-#print(BeautifulSoup(geraRSS("internacional", "moises-naim"), 'html.parser').prettify())
 gravaXML("cultura", "luis-fernando-verissimo")
 gravaXML("cultura", "leandro-karnal")
 gravaXML("cultura", "marcelo-rubens-paiva")
